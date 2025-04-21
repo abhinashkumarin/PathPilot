@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus Navigation | VGU</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="vgu logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="vgu logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .bg-slideshow {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-slideshow img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .bg-slideshow img.active {
+            opacity: 1;
+        }
+
+
+        .hero-bg {
+
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 90vh;
+        }
+
+        .map-container {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .map-container.fade-in {
+            opacity: 1;
+        }
+
+        .map-container.fade-out {
+            opacity: 0;
+        }
+
+        .building-card {
+            transition: all 0.3s ease;
+        }
+
+        .building-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .facility-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+
+        .search-box {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .floor-selector button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .room-card {
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            transform: scale(1.03);
+        }
+
+        .room-available {
+            background-color: #10b981;
+        }
+
+        .room-occupied {
+            background-color: #ef4444;
+        }
+
+        .room-unknown {
+            background-color: #6b7280;
+        }
+    </style>
+</head>
+<title>Popup</title>
+</head>
+
+<body class="bg-amber-900">
+    <!-- WhatsApp Floating Icon -->
+    <style>
+        #whatsapp-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        #whatsapp-icon:hover {
+            transform: scale(1.1);
+        }
+
+        #whatsapp-icon img {
+            width: 32px;
+            height: 32px;
+        }
+    </style>
+    <div class="bg-slideshow">
+        <img src="image3.jpg" class="active" alt="Slide 1">
+        <img src="image2.webp" alt="Slide 2">
+
+        <img src="image4.webp" alt="Slide 3">
+    </div>
+    <script>
+        const slides = document.querySelectorAll('.bg-slideshow img');
+        let currentSlide = 0;
+        const slideInterval = 4000; // 4 seconds
+
+        function showNextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(showNextSlide, slideInterval);
+    </script>
+
+
+
+    <div id="whatsapp-icon" onclick="redirectToWhatsApp()">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+    </div>
+
+    <script>
+        function redirectToWhatsApp() {
+            const phoneNumber = "918409772384"; // Replace with your WhatsApp number (without +)
+            const message = "Hi, I am interested to know more about the Smart Campus Navigation System at Vivekananda Global University Jaipur.";
+
+            const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, "_blank");
+        }
+    </script>
+    <!-- Navigation Bar -->
+    <nav class="bg-amber-900 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-10 w-auto" src="vgu logo.png" alt="VGU Logo">
+                        <span class="ml-2 text-xl font-bold text-white hidden md:block">Smart Campus Navigation</span>
+                    </div>
+                </div>
+                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="#home" class="nav-link text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="#features"
+                        class="nav-link text-white px-3 py-2 rounded-md text-sm font-medium">Features</a>
+                    <a href="#map" class="nav-link text-white px-3 py-2 rounded-md text-sm font-medium">Interactive
+                        Map</a>
+                    <a href="#facilities"
+                        class="nav-link text-white px-3 py-2 rounded-md text-sm font-medium">Facilities</a>
+                    <a href="#contact" class="nav-link text-white px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                    <button
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition duration-300">
+                        Download App
+                    </button>
+                </div>
+                <div class="-mr-2 flex items-center md:hidden">
+                    <button type="button" id="mobile-menu-button"
+                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-100">Home</a>
+                <a href="#features"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-100">Features</a>
+                <a href="#map"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-100">Interactive
+                    Map</a>
+                <a href="#facilities"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-100">Facilities</a>
+                <a href="#contact"
+                    class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-100">Contact</a>
+                <button
+                    class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Download App
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg flex items-center justify-center text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">Welcome to Smart Campus Navigation</h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Revolutionizing the way you navigate Vivekananda
+                Global University with real-time indoor positioning and voice-assisted directions.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+                    Get Started
+                </button>
+                <button
+                    class="bg-transparent hover:bg-white text-white hover:text-blue-600 font-bold py-3 px-6 border-2 border-white rounded-lg transition duration-300 transform hover:scale-105">
+                    Watch Demo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Smart Navigation Features</h2>
+                <p class="mt-4 max-w-2xl text-xl text-gray-600 mx-auto">Experience seamless campus navigation with our
+                    advanced features</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mb-6">
+                        <i class="fas fa-map-marked-alt text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Real-time Indoor Positioning</h3>
+                    <p class="text-gray-600">Accurate indoor navigation using BLE beacons with precision up to 3 meters,
+                        helping you find any room or facility instantly.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white mb-6">
+                        <i class="fas fa-qrcode text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">QR Code Scanning</h3>
+                    <p class="text-gray-600">Scan QR codes placed across campus for instant directions to your
+                        destination with just a tap.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-500 text-white mb-6">
+                        <i class="fas fa-robot text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Voice-assisted Navigation</h3>
+                    <p class="text-gray-600">Hands-free navigation with voice guidance in multiple languages, perfect
+                        for when you're on the move.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-yellow-500 text-white mb-6">
+                        <i class="fas fa-calendar-alt text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Schedule Integration</h3>
+                    <p class="text-gray-600">Sync your class schedule and get automatic reminders with directions to
+                        your next class location.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-red-500 text-white mb-6">
+                        <i class="fas fa-bell text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Real-time Updates</h3>
+                    <p class="text-gray-600">Get instant notifications about room changes, cancelled classes, or special
+                        events affecting your schedule.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mb-6">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Social Features</h3>
+                    <p class="text-gray-600">Find friends on campus, share your location for meetups, and discover
+                        popular student hangouts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Map Section -->
+    <section id="map" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Interactive Campus Map</h2>
+                <p class="mt-4 max-w-2xl text-xl text-gray-600 mx-auto">Explore our campus buildings and facilities with
+                    our interactive map</p>
+            </div>
+
+            <!-- Search Box -->
+            <div class="max-w-3xl mx-auto mb-12">
+                <div class="search-box relative">
+                    <input type="text" id="search-input"
+                        placeholder="Search for rooms, labs, or facilities (e.g. Lab 1, RNT Lab, LGO3)"
+                        class="w-full px-6 py-4 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 text-lg">
+                    <button
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2 rounded-lg">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Building Selector -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button class="building-selector active px-6 py-3 rounded-full bg-blue-600 text-white font-medium"
+                    data-building="tech">
+                    Tech Block
+                </button>
+                <button
+                    class="building-selector px-6 py-3 rounded-full bg-gray-200 text-gray-800 font-medium hover:bg-gray-300"
+                    data-building="admin">
+                    Admin Block
+                </button>
+                <button
+                    class="building-selector px-6 py-3 rounded-full bg-gray-200 text-gray-800 font-medium hover:bg-gray-300"
+                    data-building="academic">
+                    Academic Block
+                </button>
+            </div>
+
+            <!-- Floor Selector -->
+            <div class="floor-selector flex justify-center gap-2 mb-8">
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="lg">LG</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="gf">GF</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="1f">1F</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="2f">2F</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="3f">3F</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="4f">4F</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium" data-floor="5f">5F</button>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container bg-white rounded-xl shadow-xl overflow-hidden fade-in" id="map-container">
+                <div class="p-4 bg-gray-100 border-b">
+                    <h3 class="text-xl font-bold text-gray-800">Academic - Block</h3>
+                </div>
+                <div class="p-6">
+                    <iframe class="w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px]"
+                        src="https://www.google.com/maps/embed?pb=!4v1712997841992!6m8!1m7!1s-4ZqnlvMocb0%2FWauYLXGSYaI%2FAAAAAAAAAow%2FdCFSvaPFDF8vfA5Ri60dRflaVqhmRdrYwCLIBGAYYCw!2m2!1d26.8113487!2d75.8899177!3f75!4f0!5f0.7820865974627469"
+                        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"       ></iframe>
+                </div>
+            </div>
+
+            <!-- Room Status -->
+            <div class="mt-12">
+                <h3 class="text-xl font-bold mb-6 text-center">Room Availability Status</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="room-card bg-white p-4 rounded-lg shadow text-center">
+                        <div class="room-available w-4 h-4 rounded-full mx-auto mb-2"></div>
+                        <p class="font-medium">Lab 1</p>
+                        <p class="text-sm text-gray-600">Mechanical Eng</p>
+                    </div>
+                    <div class="room-card bg-white p-4 rounded-lg shadow text-center">
+                        <div class="room-occupied w-4 h-4 rounded-full mx-auto mb-2"></div>
+                        <p class="font-medium">RNT Lab</p>
+                        <p class="text-sm text-gray-600">Computer Science</p>
+                    </div>
+                    <div class="room-card bg-white p-4 rounded-lg shadow text-center">
+                        <div class="room-available w-4 h-4 rounded-full mx-auto mb-2"></div>
+                        <p class="font-medium">LGO1</p>
+                        <p class="text-sm text-gray-600">Lecture Hall</p>
+                    </div>
+                    <div class="room-card bg-white p-4 rounded-lg shadow text-center">
+                        <div class="room-available w-4 h-4 rounded-full mx-auto mb-2"></div>
+                        <p class="font-medium">LGO2</p>
+                        <p class="text-sm text-gray-600">Lecture Hall</p>
+                    </div>
+                    <div class="room-card bg-white p-4 rounded-lg shadow text-center">
+                        <div class="room-unknown w-4 h-4 rounded-full mx-auto mb-2"></div>
+                        <p class="font-medium">LGO3</p>
+                        <p class="text-sm text-gray-600">Lecture Hall</p>
+                    </div>
+                    <div class="room-card bg-white p-4 rounded-lg shadow text-center">
+                        <div class="room-available w-4 h-4 rounded-full mx-auto mb-2"></div>
+                        <p class="font-medium">LGO4</p>
+                        <p class="text-sm text-gray-600">Lecture Hall</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Facilities Section -->
+    <section id="facilities" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Campus Facilities</h2>
+                <p class="mt-4 max-w-2xl text-xl text-gray-600 mx-auto">Discover all the facilities available across our
+                    campus</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Facility 1 - Laboratories -->
+                <div class="building-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                    <div class="h-48 overflow-hidden">
+                        <img src="libro.jpeg" alt="Laboratories" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Laboratories</h3>
+                        <p class="text-gray-600 mb-4">State-of-the-art labs for Mechanical, Computer Science,
+                            Electronics and other engineering disciplines.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">Lab 1</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">RNT Lab</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">Electronics
+                                Lab</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility 2 - Library -->
+                <div class="building-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                    <div class="h-48 overflow-hidden">
+                        <img src="lib.jpeg" alt="Library" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Library</h3>
+                        <p class="text-gray-600 mb-4">Extensive collection of books, journals, and digital resources
+                            with quiet study areas.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">Main Library</span>
+                            <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">Digital
+                                Section</span>
+                            <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">Reading Room</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility 3 - Computer Labs -->
+                <div class="building-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                    <div class="h-48 overflow-hidden">
+                        <img src="computer.webp" alt="Computer Labs" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Computer Labs</h3>
+                        <p class="text-gray-600 mb-4">High-performance computing facilities with latest software for all
+                            engineering disciplines.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">CS Lab 1</span>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">CS Lab 2</span>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full">IT Lab</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility 4 - Lecture Halls -->
+                <div class="building-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                    <div class="h-48 overflow-hidden">
+                        <img src="classroom.jpg" alt="Lecture Halls" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Lecture Halls</h3>
+                        <p class="text-gray-600 mb-4">Spacious, well-equipped lecture halls with modern teaching aids
+                            and comfortable seating.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full">LGO1</span>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full">LGO2</span>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full">LGO3</span>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full">LGO4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility 5 - Cafeteria -->
+                <div class="building-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                    <div class="h-48 overflow-hidden">
+                        <img src="cafeteria.jpeg" alt="Cafeteria" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Cafeteria</h3>
+                        <p class="text-gray-600 mb-4">Variety of healthy and delicious food options in a comfortable
+                            dining environment.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full">Main Cafeteria</span>
+                            <span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full">Juice Corner</span>
+                            <span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full">Snacks Counter</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility 6 - Sports Complex -->
+                <div class="building-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                    <div class="h-49 overflow-hidden">
+                        <img src="sports.jpg" alt="Sports Complex" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Sports Complex</h3>
+                        <p class="text-gray-600 mb-4">Comprehensive sports facilities including gymnasium, basketball
+                            court, and indoor games.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full">Gym</span>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full">Basketball</span>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full">Table
+                                Tennis</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 bg-amber-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">What Our Users Say</h2>
+                <p class="mt-4 max-w-2xl text-xl text-white mx-auto">Hear from students and faculty about their
+                    experience</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-amber-900 p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <img class="h-12 w-12 rounded-full" src="https://randomuser.me/api/portraits/women/32.jpg"
+                                alt="User testimonial">
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-bold text-gray-900">Priya Sharma</h4>
+                            <p class="font-bold text-white">Computer Science Student</p>
+                        </div>
+                    </div>
+                    <p class="text-white italic">"The Smart Campus Navigation app saved me so much time during my first
+                        month at VGU. Finding my classes was effortless with the voice-guided directions."</p>
+                    <div class="mt-4 flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="bg-amber-900 p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <img class="h-12 w-12 rounded-full" src="https://randomuser.me/api/portraits/men/45.jpg"
+                                alt="User testimonial">
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-bold text-gray-900">Dr. Rajesh Verma</h4>
+                            <p class="font-bold text-white">Professor, Mechanical Eng</p>
+                        </div>
+                    </div>
+                    <p class="text-white italic">"As a faculty member, I appreciate how the system helps students find
+                        my office hours location easily. The room availability feature is particularly useful."</p>
+                    <div class="mt-4 flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="bg-amber-900 p-8 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <img class="h-12 w-12 rounded-full" src="https://randomuser.me/api/portraits/men/22.jpg"
+                                alt="User testimonial">
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-bold text-gray-900">Amit Patel</h4>
+                            <p class="font-bold text-white">Electrical Eng Student</p>
+                        </div>
+                    </div>
+                    <p class="text-white italic">"The QR code scanning feature is brilliant! I can quickly navigate to
+                        any location by scanning codes placed around campus. No more getting lost between buildings."
+                    </p>
+                    <div class="mt-4 flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact & Social Section -->
+    <section id="contact" class="py-16 bg-amber-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Connect With Us</h2>
+                <p class="mt-4 max-w-2xl text-xl text-white mx-auto">Stay updated with campus news and announcements</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Contact Form -->
+                <div class="bg-gray-50 p-8 rounded-xl shadow-md">
+                    <h3 class="text-xl font-bold mb-6">Send Us a Message</h3>
+                    <form>
+                        <div class="mb-4">
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" id="name"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="mb-4">
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="mb-4">
+                            <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                            <input type="text" id="subject"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="mb-4">
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                            <textarea id="message" rows="4"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition duration-300">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Social & Info -->
+                <div>
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4">Visit Us</h3>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <i class="fas fa-map-marker-alt text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-white">Vivekananda Global University<br>Jaipur, Rajasthan 303012</p>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4">Contact Information</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 mt-1">
+                                    <i class="fas fa-phone-alt text-blue-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-white">+91 12345 67890</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 mt-1">
+                                    <i class="fas fa-envelope text-blue-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-white">navigation@vgu.ac.in</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <h4 class="text-xl font-bold mb-4 ">Support Hours</h4>
+                        <div class="mt-2 text-sm text-white">
+                            <p>Monday - Friday: 9:00 AM - 5:00 PM</p>
+                            <p>Saturday: 10:00 AM - 2:00 PM</p>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-bold mb-4">Follow Us</h3>
+                            <div class="flex space-x-4">
+                                <!-- Facebook -->
+                                <a href="https://www.facebook.com/yourpage" target="_blank"
+                                    class="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition duration-300">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+
+                                <!-- Twitter -->
+                                <a href="https://twitter.com/yourhandle" target="_blank"
+                                    class="h-10 w-10 rounded-full bg-blue-400 text-white flex items-center justify-center hover:bg-blue-500 transition duration-300">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+
+                                <!-- Instagram -->
+                                <a href="https://www.instagram.com/yourprofile" target="_blank"
+                                    class="h-10 w-10 rounded-full bg-pink-600 text-white flex items-center justify-center hover:bg-pink-700 transition duration-300">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+
+                                <!-- LinkedIn -->
+                                <a href="https://www.linkedin.com/in/yourprofile" target="_blank"
+                                    class="h-10 w-10 rounded-full bg-blue-700 text-white flex items-center justify-center hover:bg-blue-800 transition duration-300">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+
+                                <!-- YouTube -->
+                                <a href="https://www.youtube.com/@yourchannel" target="_blank"
+                                    class="h-10 w-10 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition duration-300">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+
+                                <!-- WhatsApp -->
+                                <a href="https://wa.me/918409772384" target="_blank"
+                                    class="h-10 w-10 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition duration-300">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-amber-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <img src="vgu logo.png" alt="VGU Logo" class="h-10 mb-4">
+                    <p class="text-white">Smart Campus Navigation System for Vivekananda Global University.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="#features"
+                                class="text-gray-400 hover:text-white transition duration-300">Features</a></li>
+                        <li><a href="#map" class="text-gray-400 hover:text-white transition duration-300">Interactive
+                                Map</a></li>
+                        <li><a href="#facilities"
+                                class="text-gray-400 hover:text-white transition duration-300">Facilities</a></li>
+                        <li><a href="#contact"
+                                class="text-gray-400 hover:text-white transition duration-300">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-medium mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">User Guide</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Privacy
+                                Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Terms of
+                                Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-medium mb-4">Download App</h4>
+                    <div class="space-y-4">
+                        <button class="flex items-center bg-black text-white px-4 py-3 rounded-lg w-full">
+                            <i class="fab fa-apple text-2xl mr-3"></i>
+                            <div class="text-left">
+                                <div class="text-xs">Download on the</div>
+                                <div class="font-medium">App Store</div>
+                            </div>
+                        </button>
+                        <button class="flex items-center bg-black text-white px-4 py-3 rounded-lg w-full">
+                            <i class="fab fa-google-play text-2xl mr-3"></i>
+                            <div class="text-left">
+                                <div class="text-xs">Get it on</div>
+                                <div class="font-medium">Google Play</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-grey-400 text-sm">© 2025 Vivekananda Global University. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="https://www.facebook.com/yourpage" target="_blank"
+                        class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://twitter.com/yourhandle" target="_blank"
+                        class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://www.instagram.com/yourprofile" target="_blank"
+                        class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/yourprofile" target="_blank"
+                        class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@yourchannel" target="_blank"
+                        class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="https://wa.me/918409772384" target="_blank"
+                        class="text-gray-400 hover:text-white transition duration-300">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function () {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Building selector
+        const buildingButtons = document.querySelectorAll('.building-selector');
+        buildingButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                buildingButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-800');
+                });
+
+                this.classList.add('active', 'bg-blue-600', 'text-white');
+                this.classList.remove('bg-gray-200', 'text-gray-800');
+
+                // In a real app, this would update the map
+                const building = this.getAttribute('data-building');
+                updateMap(building);
+            });
+        });
+
+        // Floor selector
+        const floorButtons = document.querySelectorAll('.floor-selector button');
+        floorButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                floorButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-800');
+                });
+
+                this.classList.add('active', 'bg-blue-600', 'text-white');
+                this.classList.remove('bg-gray-200', 'text-gray-800');
+
+                // In a real app, this would update the map floor
+                const floor = this.getAttribute('data-floor');
+                updateFloor(floor);
+            });
+        });
+
+        // Map fade transition
+        function updateMap(building) {
+            const mapContainer = document.getElementById('map-container');
+            const title = mapContainer.querySelector('h3');
+
+            // Fade out
+            mapContainer.classList.remove('fade-in');
+            mapContainer.classList.add('fade-out');
+
+            setTimeout(() => {
+                // Update content
+                let buildingName = '';
+                switch (building) {
+                    case 'tech':
+                        buildingName = 'Tech Block';
+                        break;
+                    case 'admin':
+                        buildingName = 'Admin Block';
+                        break;
+                    case 'academic':
+                        buildingName = 'Academic Block';
+                        break;
+                }
+
+                title.textContent = `${buildingName} - Ground Floor`;
+
+                // Fade in
+                mapContainer.classList.remove('fade-out');
+                mapContainer.classList.add('fade-in');
+            }, 200);
+        }
+
+        function updateFloor(floor) {
+            const mapContainer = document.getElementById('map-container');
+            const title = mapContainer.querySelector('h3');
+            const currentTitle = title.textContent;
+            const building = currentTitle.split(' - ')[0];
+
+            // Fade out
+            mapContainer.classList.remove('fade-in');
+            mapContainer.classList.add('fade-out');
+
+            setTimeout(() => {
+                // Update content
+                let floorName = '';
+                switch (floor) {
+                    case 'lg':
+                        floorName = 'Lower Ground';
+                        break;
+                    case 'gf':
+                        floorName = 'Ground Floor';
+                        break;
+                    case '1f':
+                        floorName = '1st Floor';
+                        break;
+                    case '2f':
+                        floorName = '2nd Floor';
+                        break;
+                    case '3f':
+                        floorName = '3rd Floor';
+                        break;
+                    case '4f':
+                        floorName = '4th Floor';
+                        break;
+                    case '5f':
+                        floorName = '5th Floor';
+                        break;
+                }
+
+                title.textContent = `${building} - ${floorName}`;
+
+                // Fade in
+                mapContainer.classList.remove('fade-out');
+                mapContainer.classList.add('fade-in');
+            }, 200);
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Search functionality
+        document.getElementById('search-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch(this.value);
+            }
+        });
+
+        document.querySelector('#search-input + button').addEventListener('click', function () {
+            const input = document.getElementById('search-input');
+            performSearch(input.value);
+        });
+
+        function performSearch(query) {
+            if (query.trim() === '') return;
+
+            alert(`Searching for: ${query}\nIn a real application, this would show search results for rooms, labs, or facilities matching "${query}"`);
+
+            // In a real app, this would filter and highlight the matching locations on the map
+            // and possibly show a list of search results
+        }
+    </script>
+</body>
+
+</html>
